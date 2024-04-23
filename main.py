@@ -1,6 +1,17 @@
-from fastapi import FastAPI
+try:
+    import uvicorn
+except ImportError:
+    import sys
+    sys.exit('LOOK AT README...')
 
-from router import router as creation_router
+from app.configuration.settings import settings
 
-app = FastAPI()
-app.include_router(creation_router)
+if __name__ == "__main__":
+    uvicorn.run(
+        "app:app",
+        host=str(settings.APP_HOST),
+        port=int(settings.APP_PORT),
+        log_level='trace' if not settings.DEVELOPMENT else 'debug',
+        reload=True,
+        factory=True,
+    )

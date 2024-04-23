@@ -1,18 +1,20 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends
 
-from schemas import SNewCreation, SCreation
+from app.poetry.schemas import SNewCreation, SCreation
 
-router = APIRouter(prefix='/creation', tags=['Авторское творчество'])
+creation_router = APIRouter(prefix='/creation', tags=['Авторское творчество'])
 
 
-@router.post('')
-def add_creation(creation: Annotated[SNewCreation, Depends()]) -> SNewCreation:
+@creation_router.post('', response_model=SCreation)
+def add_creation(new_creation: Annotated[SNewCreation, Depends()]) -> SCreation:
     # FIXME
+    creation = SCreation(id=1, deleted=False, name=new_creation.name,
+                         content=new_creation.content, author=new_creation.author, album=new_creation.album)
     return creation
 
 
-@router.get('')
+@creation_router.get('')
 def test_get() -> list[SCreation]:
     lst = []
     for i in range(3):
@@ -21,7 +23,7 @@ def test_get() -> list[SCreation]:
     return lst
 
 
-@router.get('/by_author/{author_id}')
+@creation_router.get('/by_author/{author_id}', response_model=list[SCreation])
 def read_author_creations(author_id: int) -> list[SCreation]:
     # FIXME
     lst = []
@@ -31,7 +33,7 @@ def read_author_creations(author_id: int) -> list[SCreation]:
     return lst
 
 
-@router.get('/by_album/{album_id}')
+@creation_router.get('/by_album/{album_id}')
 def read_album_creations(album_id: int) -> list[SCreation]:
     # FIXME
     lst = []
@@ -41,7 +43,7 @@ def read_album_creations(album_id: int) -> list[SCreation]:
     return lst
 
 
-@router.get('')
+@creation_router.get('/all')
 def read_all_creations() -> list[SCreation]:
     # FIXME
     lst = []

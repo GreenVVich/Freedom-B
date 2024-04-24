@@ -1,14 +1,19 @@
 from pydantic import BaseModel
 
 
-class SNewCreation(BaseModel):
+class STestSchema(BaseModel):
+    id: int
+    info: str
+
+
+class SNewPoem(BaseModel):
     name: str
     content: str
     author: int | None
     album: int | None
 
 
-class SCreation(BaseModel):
+class SPoem(BaseModel):
     id: int
     deleted: bool
     name: str

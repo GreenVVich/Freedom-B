@@ -1,6 +1,6 @@
 from app.configuration.routes.routes import Routes
-from app.poetry.router import creation_router
+from app.lyric.router import lyric_router
 
 __routes__ = Routes(
-    routers=(creation_router,)
+    routers=(lyric_router,)
 )

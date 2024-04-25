@@ -6,20 +6,16 @@ class STestSchema(BaseModel):
     info: str
 
 
-class SNewPoem(BaseModel):
-    name: str
-    content: str
-    author: int | None
-    album: int | None
+class SNewAuthor(BaseModel):
+    pseudonym: str
+    info: str | None
 
 
-class SPoem(BaseModel):
+class SAuthor(BaseModel):
     id: int
     deleted: bool
-    name: str
-    content: str
-    author: int | None
-    album: int | None
+    pseudonym: str
+    info: str
 
 
 class SNewAlbum(BaseModel):
@@ -34,13 +30,17 @@ class SAlbum(BaseModel):
     author: int | None
 
 
-class SNewAuthor(BaseModel):
-    pseudonym: str
-    info: str | None
+class SNewPoem(BaseModel):
+    name: str
+    content: str
+    author: int | None
+    album: int | None
 
 
-class SAuthor(BaseModel):
+class SPoem(BaseModel):
     id: int
     deleted: bool
-    pseudonym: str
-    info: str
+    name: str
+    content: str
+    author: int | None
+    album: int | None

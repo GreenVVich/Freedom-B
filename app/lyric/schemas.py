@@ -19,28 +19,32 @@ class SAuthor(BaseModel):
 
 
 class SNewAlbum(BaseModel):
+    author_id: int
     name: str
-    author: int
 
 
 class SAlbum(BaseModel):
     id: int
     deleted: bool
+    author_id: int
     name: str
-    author: int | None
 
 
 class SNewPoem(BaseModel):
+    album_id: int
     name: str
     content: str
-    author: int | None
-    album: int | None
 
 
 class SPoem(BaseModel):
     id: int
     deleted: bool
+    album_id: int
     name: str
     content: str
-    author: int | None
-    album: int | None
+
+
+class SPoemsByAlbum(BaseModel):
+    author: SAuthor
+    album: SAlbum
+    poems: list[SPoem]

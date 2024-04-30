@@ -48,3 +48,8 @@ class SPoemsByAlbum(BaseModel):
     author: SAuthor
     album: SAlbum
     poems: list[SPoem]
+
+
+class SAlbumsByAuthor(BaseModel):
+    author: SAuthor
+    albums: list[SAlbum]

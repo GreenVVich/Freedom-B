@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.configuration.database import get_async_session
 from app.lyric.schemas import *
 from app.lyric.service import add_new_author, add_new_album, add_new_poem, get_albums_by_authors, \
-    get_all_poems_by_album, get_all_tests
+    get_all_poems_by_album, get_all_albums_by_author, get_all_tests
 
 lyric_router = APIRouter(prefix='/lyrics', tags=['Авторское творчество'])
 
@@ -31,6 +31,11 @@ async def add_poem(new_poem: SNewPoem,
 @lyric_router.get('/', response_model=list[SAlbumsByAuthor])
 async def welcome(session: AsyncSession = Depends(get_async_session)) -> list[SAlbumsByAuthor]:
     return await get_albums_by_authors(session)
+
+
+@lyric_router.get('/authors/{author_id}', response_model=SAlbumsByAuthor)
+async def get_albums_by_author(author_id: int, session: AsyncSession = Depends(get_async_session)) -> SAlbumsByAuthor:
+    return await get_all_albums_by_author(author_id, session)
 
 
 @lyric_router.get('/albums/{album_id}', response_model=SPoemsByAlbum)

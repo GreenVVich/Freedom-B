@@ -2,8 +2,8 @@ from fastapi import HTTPException
 from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.lyric.schemas import STestSchema, SNewAuthor, SAuthor, SNewAlbum, SAlbum, SNewPoem, SPoem, SPoemsByAlbum, \
-    SAlbumsByAuthor
+from app.lyric.schemas import (STestSchema, SNewAuthor, SAuthor, SNewAlbum, SAlbum, SNewPoem, SPoem, SPoemsByAlbum,
+                               SAlbumsByAuthor, )
 from app.lyric.models import Author, Album, Poem
 
 
@@ -36,7 +36,7 @@ async def get_albums_by_authors(session: AsyncSession) -> list[SAlbumsByAuthor]:
     albums = (await session.execute(album_query)).scalars().all()
     result = []
     for author in authors:
-        result.append({'author': author, 'albums': [album for album in albums if album.author_id == author.id]})
+        result.append({"author": author, "albums": [album for album in albums if album.author_id == author.id]})
 
     return result
 
@@ -48,7 +48,7 @@ async def get_all_albums_by_author(author_id: int, session: AsyncSession) -> SAl
 
     albums_query = select(Album).where(Album.author_id == author.id).order_by(Album.id)  # TODO idx / sort
     albums = (await session.execute(albums_query)).scalars().all()
-    result = {'author': author, 'albums': albums}
+    result = {"author": author, "albums": albums}
     return result
 
 
@@ -60,12 +60,12 @@ async def get_all_poems_by_album(album_id: int, session: AsyncSession) -> SPoems
     poems_query = select(Poem).where(Poem.album_id == album.id).order_by(Poem.id)  # TODO idx / sort
     poems = (await session.execute(poems_query)).scalars().all()
     author = await session.get(Author, album.author_id)
-    result = {'author': author, 'album': album, 'poems': poems}
+    result = {"author": author, "album": album, "poems": poems}
     return result
 
 
-async def get_all_tests(session: AsyncSession,) -> list[STestSchema]:
-    query = text('''SELECT * FROM text_collector''')
+async def get_all_tests(session: AsyncSession) -> list[STestSchema]:
+    query = text("""SELECT * FROM text_collector""")
     res = await session.execute(query)
     res = res.all()
     return res

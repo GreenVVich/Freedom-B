@@ -1,14 +1,11 @@
+from datetime import datetime
+
 from pydantic import BaseModel
-
-
-class STestSchema(BaseModel):
-    id: int
-    info: str
 
 
 class SNewAuthor(BaseModel):
     pseudonym: str
-    info: str | None
+    info: str | None = None
 
 
 class SAuthor(BaseModel):
@@ -18,38 +15,46 @@ class SAuthor(BaseModel):
     info: str
 
 
-class SNewAlbum(BaseModel):
+class SNewCollection(BaseModel):
     author_id: int
     name: str
+    description: str | None = None
+    publish_date: datetime | None = datetime.now()
 
 
-class SAlbum(BaseModel):
+class SCollection(BaseModel):
     id: int
     deleted: bool
     author_id: int
+    idx: int
     name: str
+    description: str | None = None
+    publish_date: datetime
 
 
 class SNewPoem(BaseModel):
-    album_id: int
+    collection_id: int
     name: str
     content: str
+    create_date: datetime | None = datetime.now()
 
 
 class SPoem(BaseModel):
     id: int
     deleted: bool
-    album_id: int
+    collection_id: int
+    idx: int
     name: str
     content: str
+    create_date: datetime
 
 
-class SPoemsByAlbum(BaseModel):
+class SPoemsByCollection(BaseModel):
     author: SAuthor
-    album: SAlbum
+    collection: SCollection
     poems: list[SPoem]
 
 
-class SAlbumsByAuthor(BaseModel):
+class SCollectionsByAuthor(BaseModel):
     author: SAuthor
-    albums: list[SAlbum]
+    collections: list[SCollection]

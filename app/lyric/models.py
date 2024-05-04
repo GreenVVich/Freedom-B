@@ -1,4 +1,6 @@
-from sqlalchemy import Column, Integer, Boolean, String, text, Text, ForeignKey
+from datetime import datetime
+
+from sqlalchemy import TIMESTAMP, Boolean, Column, ForeignKey, Integer, String, Text, text
 from sqlalchemy.orm import relationship
 
 from app.configuration.database import Base
@@ -10,24 +12,33 @@ class Author(Base):
     __tablename__ = 'Author'
     __table_args__ = {'comment': 'Авторы'}
 
-    id: int = Column(Integer, primary_key=True, autoincrement=True, comment='Идентификатор')
-    deleted:  bool = Column(Boolean, nullable=False, default=False, server_default=text('false'), comment='Отметка об '
-                                                                                                          'удалении')
-    pseudonym: str = Column(String, comment='Псевдоним автора')
-    info: str = Column(Text, nullable=False, comment='Информация об авторе')
+    id: int = Column(Integer, primary_key=True,
+                     autoincrement=True, comment='Идентификатор', index=True)
+    deleted: bool = Column(Boolean, nullable=False, default=False, server_default=text('false'),
+                           comment='Отметка об удалении')
+    pseudonym: str = Column(String, nullable=False, comment='Псевдоним автора')
+    info: str = Column(Text, nullable=True, comment='Информация об авторе')
 
 
-class Album(Base):
+class Collection(Base):
     """Сборники"""
 
-    __tablename__ = 'Album'
+    __tablename__ = 'Collection'
     __table_args__ = {'comment': 'Сборники'}
 
-    id: int = Column(Integer, primary_key=True, autoincrement=True, comment='Идентификатор')
-    deleted:  bool = Column(Boolean, nullable=False, default=False, server_default=text('false'), comment='Отметка об '
-                                                                                                          'удалении')
-    name: str = Column(String, comment='Название сборника')
-    author_id: int = Column(Integer, ForeignKey('Author.id'), comment='{Author}')
+    id: int = Column(Integer, primary_key=True,
+                     autoincrement=True, comment='Идентификатор', index=True)
+    deleted: bool = Column(Boolean, nullable=False, default=False, server_default=text('false'),
+                           comment='Отметка об удалении')
+    author_id: int = Column(Integer, ForeignKey(
+        'Author.id'), nullable=False, comment='{Author}')
+    idx: int = Column(Integer, nullable=False, default=1,
+                      comment='Индекс для сортировки')
+    name: str = Column(String, nullable=False, comment='Название')
+    description: str = Column(String, nullable=True, default=None, server_default=text('null'),
+                              comment='Описание')
+    publish_date: datetime = Column(TIMESTAMP(timezone=True), nullable=False, default=datetime.now,
+                                    server_default=text('now()'), comment='Дата публикации')
 
     author = relationship('Author')
 
@@ -38,11 +49,17 @@ class Poem(Base):
     __tablename__ = 'Poem'
     __table_args__ = {'comment': 'Стихотворения'}
 
-    id: int = Column(Integer, primary_key=True, autoincrement=True, comment='Идентификатор')
-    deleted:  bool = Column(Boolean, nullable=False, default=False, server_default=text('false'), comment='Отметка об '
-                                                                                                          'удалении')
-    album_id: int = Column(Integer, ForeignKey('Album.id'), comment='{Album}')
-    name: str = Column(String, comment='Название стихотворения')
-    content: str = Column(Text, nullable=False, comment='Само стихотворение')
+    id: int = Column(Integer, primary_key=True,
+                     autoincrement=True, comment='Идентификатор')
+    deleted: bool = Column(Boolean, nullable=False, default=False, server_default=text('false'),
+                           comment='Отметка об удалении')
+    collection_id: int = Column(Integer, ForeignKey(
+        'Collection.id'), comment='{Collection}')
+    idx: int = Column(Integer, nullable=False, default=1,
+                      comment='Индекс для сортировки')
+    name: str = Column(String, nullable=False, comment='Название')
+    content: str = Column(Text, nullable=False, comment='Содержимое')
+    create_date: datetime = Column(TIMESTAMP(timezone=True), nullable=False, default=datetime.now,
+                                   server_default=text('now()'), comment='Дата создания')
 
-    album = relationship('Album')
+    collection = relationship('Collection')

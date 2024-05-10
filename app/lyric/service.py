@@ -47,8 +47,8 @@ async def get_all_collections_by_author(author_id: int, session: AsyncSession) -
     if not author:
         raise HTTPException(status_code=404, detail="Автор не найден")
 
-    collections_query = select(Collection).where(Collection.author_id == author.id).order_by(
-        Collection.id)  # TODO idx / sort
+    collections_query = select(Collection).where(Collection.author_id == author.id).order_by(Collection.idx,
+                                                                                             Collection.id)
     collections = (await session.execute(collections_query)).scalars().all()
     result = {"author": author, "collections": collections}
     return result
@@ -60,7 +60,7 @@ async def get_all_poems_by_collection(collection_id: int, session: AsyncSession)
         raise HTTPException(status_code=404, detail="Альбом не найден")
 
     poems_query = select(Poem).where(Poem.collection_id ==
-                                     collection.id).order_by(Poem.id)  # TODO idx / sort
+                                     collection.id).order_by(Poem.idx, Poem.id)
     poems = (await session.execute(poems_query)).scalars().all()
     author = await session.get(Author, collection.author_id)
     result = {"author": author, "collection": collection, "poems": poems}

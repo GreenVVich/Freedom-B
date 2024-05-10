@@ -12,19 +12,19 @@ lyric_router = APIRouter(prefix='/lyrics', tags=['Авторское творч�
 
 
 @lyric_router.post('/authors', response_model=SAuthor)
-async def add_author(new_author: Annotated[SNewAuthor, Depends()],
+async def add_author(new_author: SNewAuthor,
                      session: AsyncSession = Depends(get_async_session)) -> SAuthor:
     return await add_new_author(new_author, session)
 
 
 @lyric_router.post('/collections', response_model=SCollection)
-async def add_collection(new_collection: Annotated[SNewCollection, Depends()],
+async def add_collection(new_collection: SNewCollection,
                          session: AsyncSession = Depends(get_async_session)) -> SCollection:
     return await add_new_collection(new_collection, session)
 
 
 @lyric_router.post('/poems', response_model=SPoem)
-async def add_poem(new_poem: Annotated[SNewPoem, Depends()],
+async def add_poem(new_poem: SNewPoem,
                    session: AsyncSession = Depends(get_async_session)) -> SPoem:
     return await add_new_poem(new_poem, session)
 

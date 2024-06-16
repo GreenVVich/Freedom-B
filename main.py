@@ -2,7 +2,8 @@ try:
     import uvicorn
 except ImportError:
     import sys
-    sys.exit('LOOK AT README...')
+    sys.exit('No venv?...'
+             )
 
 from app.configuration.settings import settings
 

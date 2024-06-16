@@ -2,8 +2,7 @@ try:
     import uvicorn
 except ImportError:
     import sys
-    sys.exit('No venv?...'
-             )
+    sys.exit('No venv?...')
 
 from app.configuration.settings import settings
 

@@ -17,7 +17,8 @@ class Author(Base):
     deleted: bool = Column(Boolean, nullable=False, default=False, server_default=text('false'),
                            comment='Отметка об удалении')
     pseudonym: str = Column(String, nullable=False, comment='Псевдоним автора')
-    info: str = Column(Text, nullable=True, comment='Информация об авторе')
+    info: str = Column(Text, nullable=True,
+                       comment='Краткая информация об авторе')
 
 
 class Collection(Base):

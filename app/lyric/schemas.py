@@ -33,7 +33,8 @@ class SCollection(BaseModel):
 
 
 class SNewPoem(BaseModel):
-    collection_id: int
+    author_id: int
+    collection_id: int | None
     name: str
     content: str
     create_date: datetime | None = datetime.now()
@@ -42,8 +43,8 @@ class SNewPoem(BaseModel):
 class SPoem(BaseModel):
     id: int
     deleted: bool
-    collection_id: int
-    idx: int
+    author_id: int
+    collection_id: int | None
     name: str
     content: str
     create_date: datetime

@@ -2,7 +2,7 @@ from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.lyric.models import Author, Collection, Poem
+from app.lyric.models import Author, Collection, CollectionPoem, Poem
 from app.lyric.schemas import (SAuthor, SCollection, SCollectionsByAuthor, SNewAuthor, SNewCollection, SNewPoem, SPoem,
                                SPoemsByCollection)
 
@@ -24,6 +24,9 @@ async def add_new_collection(new_collection: SNewCollection, session: AsyncSessi
 async def add_new_poem(new_poem: SNewPoem, session: AsyncSession) -> SPoem:
     poem = Poem(**new_poem.model_dump())
     session.add(poem)
+    connection = CollectionPoem(
+        collection_id=new_poem.collection_id, poem_id=poem.id, idx=1)  # TODO idx gen
+    session.add(connection)
     await session.commit()
     return poem
 
@@ -59,8 +62,9 @@ async def get_all_poems_by_collection(collection_id: int, session: AsyncSession)
     if not collection:
         raise HTTPException(status_code=404, detail="Альбом не найден")
 
-    poems_query = select(Poem).where(Poem.collection_id ==
-                                     collection.id).order_by(Poem.idx, Poem.id)
+    poems_query = (select(CollectionPoem, Poem).join(CollectionPoem)
+                   .where(CollectionPoem.collection_id == collection.id)
+                   .order_by(Poem.idx, Poem.id))
     poems = (await session.execute(poems_query)).scalars().all()
     author = await session.get(Author, collection.author_id)
     result = {"author": author, "collection": collection, "poems": poems}

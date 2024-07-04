@@ -12,7 +12,7 @@ class SAuthor(BaseModel):
     id: int
     deleted: bool
     pseudonym: str
-    info: str
+    info: str | None
 
 
 class SNewCollection(BaseModel):
@@ -34,9 +34,10 @@ class SCollection(BaseModel):
 
 class SNewPoem(BaseModel):
     author_id: int
-    collection_id: int | None
+    collection_id: int | None = None
     name: str
     content: str
+    version: int = 1
     create_date: datetime | None = datetime.now()
 
 
@@ -44,9 +45,9 @@ class SPoem(BaseModel):
     id: int
     deleted: bool
     author_id: int
-    collection_id: int | None
     name: str
     content: str
+    version: int
     create_date: datetime
 
 

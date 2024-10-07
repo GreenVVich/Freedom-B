@@ -28,7 +28,7 @@ class SCollection(BaseModel):
     author_id: int
     idx: int
     name: str
-    description: str | None = None
+    description: str | None
     publish_date: datetime
 
 
@@ -37,7 +37,7 @@ class SNewPoem(BaseModel):
     collection_id: int | None = None
     name: str
     content: str
-    version: int = 1
+    parent_id: int | None = None
     create_date: datetime | None = datetime.now()
 
 
@@ -47,7 +47,7 @@ class SPoem(BaseModel):
     author_id: int
     name: str
     content: str
-    version: int
+    parent_id: int | None
     create_date: datetime
 
 

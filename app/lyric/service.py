@@ -23,7 +23,7 @@ async def add_new_collection(new_collection: SNewCollection, session: AsyncSessi
 
 async def add_new_poem(new_poem: SNewPoem, session: AsyncSession) -> SPoem:
     poem = Poem(author_id=new_poem.author_id, name=new_poem.name,
-                content=new_poem.content, version=new_poem.version,
+                content=new_poem.content, parent_id=new_poem.parent_id,
                 create_date=new_poem.create_date)
     session.add(poem)
     await session.flush()
@@ -39,13 +39,18 @@ async def get_collections_by_authors(session: AsyncSession) -> list[SCollections
     # TODO Исправить на один нормальный запрос, пушто стыдно, ей богу
     author_query = select(Author)
     authors = (await session.execute(author_query)).scalars().all()
+    if not authors:
+        raise HTTPException(status_code=404, detail="Авторы не найдены")
+
     collection_query = select(Collection)
     collections = (await session.execute(collection_query)).scalars().all()
+    if not collections:
+        raise HTTPException(status_code=404, detail="Альбомы не найдены")
+
     result = []
     for author in authors:
         result.append({"author": author,
                        "collections": [collection for collection in collections if collection.author_id == author.id]})
-
     return result
 
 
@@ -57,6 +62,9 @@ async def get_all_collections_by_author(author_id: int, session: AsyncSession) -
     collections_query = select(Collection).where(Collection.author_id == author.id).order_by(Collection.idx,
                                                                                              Collection.id)
     collections = (await session.execute(collections_query)).scalars().all()
+    if not collections:
+        raise HTTPException(status_code=404, detail="Альбомы не найдены")
+
     result = {"author": author, "collections": collections}
     return result
 

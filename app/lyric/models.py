@@ -58,8 +58,8 @@ class Poem(Base):
         'Author.id'), nullable=False, comment='{Author}')
     name: str = Column(String, nullable=False, comment='Название')
     content: str = Column(Text, nullable=False, comment='Содержимое')
-    version: int = Column(Integer, nullable=False, default=1,
-                          comment='Версия, чтобы была возможность редактировать')
+    parent_id: int = Column(Integer, default=None, server_default=text('null'),
+                            comment='Прошлая версия стихотворения')
     create_date: datetime = Column(TIMESTAMP(timezone=True), nullable=False, default=datetime.now,
                                    server_default=text('now()'), comment='Дата создания')
 

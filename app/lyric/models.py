@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import TIMESTAMP, Boolean, Column, ForeignKey, Integer, String, Text, text
+from sqlalchemy import TIMESTAMP, Boolean, Column, ForeignKey, Integer, String, Text, func, text
 from sqlalchemy.orm import relationship
 
 from app.configuration.database import Base
@@ -39,9 +39,9 @@ class Collection(Base):
     description: str = Column(String, nullable=True, default=None, server_default=text('null'),
                               comment='Описание')
     publish_date: datetime = Column(TIMESTAMP(timezone=True), nullable=False, default=datetime.now,
-                                    server_default=text('now()'), comment='Дата публикации')
+                                    server_default=func.now(), comment='Дата публикации')
 
-    author = relationship('Author')
+    author = relationship('Author', backref='Collection')
 
 
 class Poem(Base):
@@ -61,9 +61,9 @@ class Poem(Base):
     parent_id: int = Column(Integer, default=None, server_default=text('null'),
                             comment='Прошлая версия стихотворения')
     create_date: datetime = Column(TIMESTAMP(timezone=True), nullable=False, default=datetime.now,
-                                   server_default=text('now()'), comment='Дата создания')
+                                   server_default=func.now(), comment='Дата создания')
 
-    author = relationship('Author')
+    author = relationship('Author', backref='Poem')
 
 
 class CollectionPoem(Base):
@@ -79,5 +79,5 @@ class CollectionPoem(Base):
     idx: int = Column(Integer, nullable=False, default=1,
                       comment='Индекс для сортировки')
 
-    collection = relationship('Collection')
-    poem = relationship('Poem')
+    collection = relationship('Collection', backref='CollectionPoem')
+    poem = relationship('Poem', backref='CollectionPoem')

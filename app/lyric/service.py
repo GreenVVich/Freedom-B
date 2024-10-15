@@ -33,18 +33,19 @@ async def add_new_poem(new_poem: SNewPoem, session: AsyncSession) -> SPoemInColl
                 content=new_poem.content, create_date=new_poem.create_date)
     session.add(poem)
     await session.flush()
+    idx = None
     if new_poem.collection_id:
         result = await session.execute(
             select(func.coalesce(func.max(CollectionPoem.idx), 0) + 1)
             .where(CollectionPoem.collection_id == new_poem.collection_id))
-        max_idx = result.scalar()
+        idx = result.scalar()
         # Limit max_idx
 
         connection = CollectionPoem(
-            collection_id=new_poem.collection_id, poem_id=poem.id, idx=max_idx)
+            collection_id=new_poem.collection_id, poem_id=poem.id, idx=idx)
         session.add(connection)
     await session.commit()
-    return poem
+    return {**poem.__dict__, "idx": idx}
 
 
 async def get_collections_by_authors(session: AsyncSession) -> list[SCollectionsByAuthor]:
@@ -88,10 +89,13 @@ async def get_all_poems_by_collection(collection_id: int, session: AsyncSession)
     if not collection:
         raise HTTPException(status_code=404, detail="Альбом не найден")
 
-    poems_query = (select(Poem).join(CollectionPoem)
-                   .where(CollectionPoem.collection_id == collection.id)
-                   .order_by(CollectionPoem.idx, Poem.id))
-    poems = (await session.execute(poems_query)).scalars().all()
+    pre_poems_query = (select(Poem, CollectionPoem.idx)
+                       .select_from(Poem)
+                       .join(CollectionPoem)
+                       .where(CollectionPoem.collection_id == collection.id)
+                       .order_by(CollectionPoem.idx, Poem.id))
+    pre_poems = (await session.execute(pre_poems_query)).all()
+    poems = [{**poem.__dict__, "idx": idx} for poem, idx in pre_poems]
     author = await session.get(Author, collection.author_id)
     result = {"author": author, "collection": collection, "poems": poems}
     return result

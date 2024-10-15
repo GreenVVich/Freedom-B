@@ -41,8 +41,9 @@ class SNewPoem(BaseModel):
     create_date: datetime | None = datetime.now()
 
 
-class SPoem(BaseModel):
+class SPoemInCollection(BaseModel):
     id: int
+    idx: int | None
     deleted: bool
     author_id: int
     name: str
@@ -54,7 +55,7 @@ class SPoem(BaseModel):
 class SPoemsByCollection(BaseModel):
     author: SAuthor
     collection: SCollection
-    poems: list[SPoem]
+    poems: list[SPoemInCollection]
 
 
 class SCollectionsByAuthor(BaseModel):

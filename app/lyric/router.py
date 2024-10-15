@@ -21,9 +21,9 @@ async def add_collection(new_collection: SNewCollection,
     return await add_new_collection(new_collection, session)
 
 
-@lyric_router.post('/poems', response_model=SPoem)
+@lyric_router.post('/poem', response_model=SPoemInCollection)
 async def add_poem(new_poem: SNewPoem,
-                   session: AsyncSession = Depends(get_async_session)) -> SPoem:
+                   session: AsyncSession = Depends(get_async_session)) -> SPoemInCollection:
     return await add_new_poem(new_poem, session)
 
 

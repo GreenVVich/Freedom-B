@@ -73,9 +73,13 @@ async def get_all_collections_by_author(author_id: int, session: AsyncSession) -
     author = await session.get(Author, author_id)
     if not author:
         raise HTTPException(status_code=404, detail="Автор не найден")
+    if author.deleted:
+        raise HTTPException(status_code=410, detail="Автор был удалён")
 
-    collections_query = select(Collection).where(Collection.author_id == author.id).order_by(Collection.idx,
-                                                                                             Collection.id)
+    collections_query = (select(Collection)
+                         .where(Collection.author_id == author.id)
+                         .where(Collection.deleted.is_(False))
+                         .order_by(Collection.idx, Collection.id))
     collections = (await session.execute(collections_query)).scalars().all()
     if not collections:
         raise HTTPException(status_code=404, detail="Альбомы не найдены")
@@ -88,14 +92,32 @@ async def get_all_poems_by_collection(collection_id: int, session: AsyncSession)
     collection = await session.get(Collection, collection_id)
     if not collection:
         raise HTTPException(status_code=404, detail="Альбом не найден")
+    if collection.deleted:
+        raise HTTPException(status_code=410, detail="Альбом был удалён")
+
+    author = await session.get(Author, collection.author_id)
+    if not author:
+        raise HTTPException(status_code=404, detail="Автор не найден")
+    if author.deleted:
+        raise HTTPException(status_code=410, detail="Автор был удалён")
 
     pre_poems_query = (select(Poem, CollectionPoem.idx)
                        .select_from(Poem)
                        .join(CollectionPoem)
                        .where(CollectionPoem.collection_id == collection.id)
+                       .where(Poem.deleted.is_(False))
                        .order_by(CollectionPoem.idx, Poem.id))
     pre_poems = (await session.execute(pre_poems_query)).all()
     poems = [{**poem.__dict__, "idx": idx} for poem, idx in pre_poems]
     author = await session.get(Author, collection.author_id)
     result = {"author": author, "collection": collection, "poems": poems}
     return result
+
+
+async def delete_full_poem(poem_id: int, session: AsyncSession) -> None:
+    poem = await session.get(Poem, poem_id)
+    if not poem:
+        raise HTTPException(status_code=404, detail="Произведение не найдено")
+    poem.deleted = True
+    await session.commit()
+    # TODO add return

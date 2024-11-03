@@ -68,8 +68,9 @@ async def get_collections_by_authors(session: AsyncSession) -> list[SCollections
     result = []
     for author in authors:
         result.append(SCollectionsByAuthor(
-            author=author,
-            collections=[collection for collection in collections if collection.author_id == author.id]))
+            author=SAuthor(**author.__dict__),
+            collections=[SCollection(**collection.__dict__)
+                         for collection in collections if collection.author_id == author.id]))
     return result
 
 
@@ -88,7 +89,9 @@ async def get_all_collections_by_author(author_id: int, session: AsyncSession) -
     if not collections:
         raise HTTPException(status_code=404, detail="Альбомы не найдены")
 
-    return SCollectionsByAuthor(author=author, collections=collections)
+    return SCollectionsByAuthor(author=SAuthor(**author.__dict__),
+                                collections=[SCollection(**collection.__dict__)
+                                             for collection in collections if collection.author_id == author.id])
 
 
 async def get_all_poems_by_collection(collection_id: int, session: AsyncSession) -> SPoemsByCollection:

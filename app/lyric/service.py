@@ -39,13 +39,16 @@ async def add_new_poem(new_poem: SNewPoem, session: AsyncSession) -> SPoemInColl
             select(func.coalesce(func.max(CollectionPoem.idx), 0) + 1)
             .where(CollectionPoem.collection_id == new_poem.collection_id))
         idx = result.scalar()
-        # Limit max_idx
+        if idx > 100:
+            raise HTTPException(
+                status_code=409, detail="Превышен лимит для одного альбома")
 
         connection = CollectionPoem(
             collection_id=new_poem.collection_id, poem_id=poem.id, idx=idx)
         session.add(connection)
+
     await session.commit()
-    return {**poem.__dict__, "idx": idx}
+    return SPoemInCollection(id=poem.id, idx=idx, **new_poem.model_dump())
 
 
 async def get_collections_by_authors(session: AsyncSession) -> list[SCollectionsByAuthor]:
@@ -64,8 +67,9 @@ async def get_collections_by_authors(session: AsyncSession) -> list[SCollections
 
     result = []
     for author in authors:
-        result.append({"author": author,
-                       "collections": [collection for collection in collections if collection.author_id == author.id]})
+        result.append(SCollectionsByAuthor(
+            author=author,
+            collections=[collection for collection in collections if collection.author_id == author.id]))
     return result
 
 
@@ -84,8 +88,7 @@ async def get_all_collections_by_author(author_id: int, session: AsyncSession) -
     if not collections:
         raise HTTPException(status_code=404, detail="Альбомы не найдены")
 
-    result = {"author": author, "collections": collections}
-    return result
+    return SCollectionsByAuthor(author=author, collections=collections)
 
 
 async def get_all_poems_by_collection(collection_id: int, session: AsyncSession) -> SPoemsByCollection:
@@ -108,10 +111,9 @@ async def get_all_poems_by_collection(collection_id: int, session: AsyncSession)
                        .where(Poem.deleted.is_(False))
                        .order_by(CollectionPoem.idx, Poem.id))
     pre_poems = (await session.execute(pre_poems_query)).all()
-    poems = [{**poem.__dict__, "idx": idx} for poem, idx in pre_poems]
-    author = await session.get(Author, collection.author_id)
-    result = {"author": author, "collection": collection, "poems": poems}
-    return result
+    return SPoemsByCollection(author=SAuthor(**author.__dict__),
+                              collection=SCollection(**collection.__dict__),
+                              poems=[{**poem.__dict__, "idx": idx} for poem, idx in pre_poems])
 
 
 async def delete_full_poem(poem_id: int, session: AsyncSession) -> None:

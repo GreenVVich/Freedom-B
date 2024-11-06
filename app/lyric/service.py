@@ -1,6 +1,7 @@
 from fastapi import HTTPException
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 
 from app.lyric.models import Author, Collection, CollectionPoem, Poem
 from app.lyric.schemas import (SAuthor, SCollection, SCollectionsByAuthor, SNewAuthor, SNewCollection, SNewPoem,
@@ -18,6 +19,9 @@ async def add_new_collection(new_collection: SNewCollection, session: AsyncSessi
     author = await session.get(Author, new_collection.author_id)
     if not author:
         raise HTTPException(status_code=404, detail="Автор не найден")
+    if author.deleted:
+        raise HTTPException(status_code=410, detail="Автор был удалён")
+
     collection = Collection(**new_collection.model_dump())
     session.add(collection)
     await session.commit()
@@ -28,6 +32,8 @@ async def add_new_poem(new_poem: SNewPoem, session: AsyncSession) -> SPoemInColl
     author = await session.get(Author, new_poem.author_id)
     if not author:
         raise HTTPException(status_code=404, detail="Автор не найден")
+    if author.deleted:
+        raise HTTPException(status_code=410, detail="Автор был удалён")
 
     poem = Poem(author_id=new_poem.author_id, name=new_poem.name,
                 content=new_poem.content, create_date=new_poem.create_date)
@@ -51,26 +57,20 @@ async def add_new_poem(new_poem: SNewPoem, session: AsyncSession) -> SPoemInColl
     return SPoemInCollection(id=poem.id, idx=idx, **new_poem.model_dump())
 
 
-async def get_collections_by_authors(session: AsyncSession) -> list[SCollectionsByAuthor]:
-    # Limit and offset
-
-    author_query = select(Author)
-    authors = (await session.execute(author_query)).scalars().all()
-    if not authors:
-        raise HTTPException(status_code=404, detail="Авторы не найдены")
-
-    collection_query = select(Collection).order_by(
-        Collection.idx, Collection.id)
-    collections = (await session.execute(collection_query)).scalars().all()
-    if not collections:
-        raise HTTPException(status_code=404, detail="Альбомы не найдены")
+async def get_collections_by_authors(page: int, size: int, session: AsyncSession) -> list[SCollectionsByAuthor]:
+    authors_collections_query = (select(Author)
+                                 .options(joinedload(Author.collections))
+                                 .where(Author.deleted.is_(False), Collection.deleted.is_(False))
+                                 .limit(size)).offset((page - 1) * size)
+    authors_with_collections = (await session.execute(authors_collections_query)).unique().scalars().all()
 
     result = []
-    for author in authors:
+    for author in authors_with_collections:
         result.append(SCollectionsByAuthor(
             author=SAuthor(**author.__dict__),
-            collections=[SCollection(**collection.__dict__)
-                         for collection in collections if collection.author_id == author.id]))
+            collections=[SCollection(**collection.__dict__) for collection in author.collections])
+        )
+
     return result
 
 

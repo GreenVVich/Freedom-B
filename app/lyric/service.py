@@ -54,7 +54,7 @@ async def add_new_poem(new_poem: SNewPoem, session: AsyncSession) -> SPoemInColl
         session.add(connection)
 
     await session.commit()
-    return SPoemInCollection(id=poem.id, idx=idx, **new_poem.model_dump())
+    return SPoemInCollection(id=poem.id, idx=idx, deleted=False, **new_poem.model_dump())
 
 
 async def get_collections_by_authors(page: int, size: int, session: AsyncSession) -> list[SCollectionsByAuthor]:
